@@ -33,14 +33,16 @@ function validateRegisterUser(obj) {
       .min(3)
       .max(50)
       .pattern(/^[\u0600-\u06FFa-zA-Z\s]+$/)
-      .required(),
+      .required()
+      .messages(messages.firstName),
 
     lastName: Joi.string()
       .trim()
       .min(3)
       .max(50)
       .pattern(/^[\u0600-\u06FFa-zA-Z\s]+$/)
-      .required(),
+      .required()
+      .messages(messages.lastName),
 
     email: Joi.string().trim().min(5).max(100).email().required(),
 
@@ -52,9 +54,9 @@ function validateRegisterUser(obj) {
 // Validate Login User
 function validateLoginUser(obj) {
   const schema = Joi.object({
-    userId: Joi.string().trim().min(10).max(10).required(),
+    userId: Joi.string().trim().min(10).max(10).required().messages(messages.firstName),
 
-    password: Joi.string().trim().min(8).required(),
+    password: Joi.string().trim().min(8).required().messages(messages.lastName),
   });
   return schema.validate(obj);
 }

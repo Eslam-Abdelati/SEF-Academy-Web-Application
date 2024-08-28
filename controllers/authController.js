@@ -15,6 +15,7 @@ const {
  *  @access  public
  */
 module.exports.register = asyncHandler(async (req, res) => {
+  
   const { error } = validateRegisterUser(req.body);
   if (error) {
     return res.status(400).json({
@@ -32,6 +33,7 @@ module.exports.register = asyncHandler(async (req, res) => {
   }
 
   req.body.password = await hashPassword(req.body.password);
+
   const userId = await generateUserId();
 
   user = new User({ userId, ...req.body });
@@ -54,6 +56,7 @@ module.exports.register = asyncHandler(async (req, res) => {
  *  @access  public
  */
 module.exports.login = asyncHandler(async (req, res) => {
+  
   const { error } = validateLoginUser(req.body);
   if (error) {
     return res.status(400).json({
