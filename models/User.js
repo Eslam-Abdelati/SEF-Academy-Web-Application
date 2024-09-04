@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 
 const userSchema = new mongoose.Schema(
   {
@@ -13,7 +14,7 @@ const userSchema = new mongoose.Schema(
 
     phoneNumber: { type: String },
 
-    age: { type: Number },
+    dateOfBirth: { type: Date },
     graduationYear: { type: Number },
     about: { type: String },
     nationality: { type: String },
@@ -21,21 +22,19 @@ const userSchema = new mongoose.Schema(
     city: { type: String },
     university: { type: String },
     major: { type: String },
-    isActive: { type: Boolean, default: false },
+    status: { type: Boolean, default: false },
     isEmailVerified: { type: Boolean, default: false },
     role: {
       type: String,
-      enum: ["admin", "instructor", "student", "editor"],
+      enum: ["admin", "instructor", "editor", "student"],
       default: "student",
     },
 
-    // profileImage TODO later
-
     profileImage: {
       type: String,
-      default: "",
+      default: path.join(`${__dirname}`, `../images/user/defultprofileimage.png`),
     },
-    
+
   },
   { versionKey: false }
 );

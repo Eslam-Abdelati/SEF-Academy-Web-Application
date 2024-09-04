@@ -1,8 +1,14 @@
 const { User } = require("../models/User");
-
+const path = require("path")
+const fs = require("fs")
 const { validateUpdateUser } = require("../validation/userValidator");
 
-
+/**
+ *  @desc    get all Users
+ *  @route   /api/users
+ *  @method  GET
+ *  @access  private only admin
+ */
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -21,6 +27,13 @@ exports.getAllUsers = async (req, res) => {
     });
   }
 };
+
+/**
+ *  @desc    get user by id
+ *  @route   /api/users/:id
+ *  @method  GET
+ *  @access  public 
+ */
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
@@ -44,8 +57,15 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+/**
+ *  @desc    update User
+ *  @route   /api/users/:id
+ *  @method  PUT
+ *  @access  private only admin and user him self
+ */
 exports.updateUser = async (req, res) => {
   try {
+
     const { error } = validateUpdateUser(req.body);
     if (error) {
       return res.status(400).json({
@@ -56,13 +76,30 @@ exports.updateUser = async (req, res) => {
 
     const user = await User.findById(req.params.id);
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     if (req.body.email && req.body.email !== user.email) {
       const existingUser = await User.findOne({ email: req.body.email });
       if (existingUser) {
-        return res
-          .status(400)
-          .json({ message: "This email is already in use" });
+        return res.status(400).json({ message: "This email is already in use" });
       }
+    }
+
+    if (req.file) {
+      if (user.profileImage && !user.profileImage.includes("defultprofileimage.png")) {
+
+        const oldImagePath = path.join(`${__dirname}`, `../images/user`, path.basename(user.profileImage));
+        fs.unlink(oldImagePath, (err) => {
+          if (err) console.log("Failed to delete old image:", err.message);
+        });
+      }
+
+      req.body.profileImage = path.join(`${__dirname}`, `../images/user/${req.file.filename}`);
     }
 
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -81,12 +118,16 @@ exports.updateUser = async (req, res) => {
       updatedUser,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal server error" + error.message });
+    return res.status(500).json({ message: "Internal server error: " + error.message });
   }
 };
 
+/**
+ *  @desc    delete User
+ *  @route   /api/users/:id
+ *  @method  DELETE
+ *  @access  private only admin and user him self
+ */
 exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -101,11 +142,17 @@ exports.deleteUser = async (req, res) => {
     if (user.role === "admin") {
       return res.status(403).json({
         success: false,
-        message: "admin cannot be deleted",
+        message: "Admin cannot be deleted",
       });
     }
 
-    //delete all records and image that related to this user
+    // Delete the user's profile image if it exists and it's not the default image
+    if (user.profileImage && !user.profileImage.includes("defultprofileimage.png")) {
+      const imagePath = path.join(`${__dirname}`, `../images/user`, path.basename(user.profileImage));
+      fs.unlink(imagePath, (err) => {
+        if (err) console.log("Failed to delete user image:", err.message);
+      });
+    }
 
     await User.findByIdAndDelete(req.params.id);
     return res.status(200).json({ message: "User deleted successfully" });

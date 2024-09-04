@@ -5,6 +5,7 @@ const { User, hashPassword } = require("../models/User");
 
 const {
   validateRegisterUser,
+  validateRegisterUserByAdmin,
   validateLoginUser,
 } = require("../validation/userValidator");
 
@@ -15,7 +16,7 @@ const {
  *  @access  public
  */
 module.exports.register = asyncHandler(async (req, res) => {
-  
+
   const { error } = validateRegisterUser(req.body);
   if (error) {
     return res.status(400).json({
@@ -48,6 +49,68 @@ module.exports.register = asyncHandler(async (req, res) => {
     data: { ...other, token },
   });
 });
+/**
+ *  @desc    Register New User by admin
+ *  @route   /api/auth/registerbyadmin
+ *  @method  POST
+ *  @access  private
+ */
+module.exports.registerByAdmin = asyncHandler(async (req, res) => {
+
+  const { email, userId } = req.body;
+
+  const { error } = validateRegisterUserByAdmin(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message,
+    });
+  }
+
+  let user = await User.findOne({
+    $or: [{ email }, { userId }]
+  });
+
+  if (user) {
+    const message = user.email === email
+      ? "This email is already registered."
+      : "This userId is already registered.";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  }
+
+  req.body.password = await hashPassword(req.body.password);
+
+  user = new User(req.body);
+
+  const result = await user.save();
+
+  const { password, ...other } = result._doc;
+
+  res.status(201).json({
+    success: true,
+    data: { ...other },
+  });
+});
+
+/**
+ *  @desc    generate user id
+ *  @route   /api/auth/generateuserid
+ *  @method  GET
+ *  @access  private
+ */
+module.exports.generateUserId = asyncHandler(async (req, res) => {
+
+  const userId = await generateUserId();
+
+  res.status(201).json({
+    success: true,
+    data: userId,
+  });
+});
 
 /**
  *  @desc    Login User
@@ -56,7 +119,7 @@ module.exports.register = asyncHandler(async (req, res) => {
  *  @access  public
  */
 module.exports.login = asyncHandler(async (req, res) => {
-  
+
   const { error } = validateLoginUser(req.body);
   if (error) {
     return res.status(400).json({

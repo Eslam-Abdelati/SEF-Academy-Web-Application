@@ -1,4 +1,6 @@
 const express = require("express");
+const { uploadImageMiddleware } = require("../middlewares/upload")
+
 const {
   getAllUsers,
   getUserById,
@@ -12,7 +14,7 @@ router.get("/", getAllUsers);
 
 // /api/users/:id
 router.get("/:id", getUserById);
-router.put("/:id", updateUser);
+router.put("/:id", uploadImageMiddleware, updateUser);
 router.delete("/:id", deleteUser);
 
 module.exports = router;

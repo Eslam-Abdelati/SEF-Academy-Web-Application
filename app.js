@@ -1,14 +1,18 @@
 const express = require("express");
-const connectDB = require("./config/database");
 const app = express();
+
+const path = require("path");
+
 const cors = require("cors");
 const helmet = require("helmet");
 
-require("dotenv").config();
 
+const connectDB = require("./config/database");
+const logger = require("./middlewares/logger");
 const { notFound, errorHanlder } = require("./middlewares/errors");
 
-// Connect to MongoDB
+require("dotenv").config();
+
 connectDB();
 
 app.use(
@@ -20,13 +24,25 @@ app.use(
   })
 );
 
-app.use(helmet());
+// Static Folder
+app.use(express.static(path.join(__dirname, "images")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(logger);
+
+app.use(helmet());
 
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
+
+
+app.use("/api/test", require("./routes/test"));
+
+// const { User } = require("./models/User")
+// console.log(User.schema.obj.role.enum);
+// console.log(User.schema.methods.generateToken());
+
 
 app.use(notFound);
 app.use(errorHanlder);
