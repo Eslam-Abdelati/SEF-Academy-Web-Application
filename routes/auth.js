@@ -1,5 +1,5 @@
 const express = require("express");
-
+const verifyTokenAndAuthorization = require("../middlewares/verifyToken")
 const {
     register,
     registerByAdmin,
@@ -11,10 +11,10 @@ const router = express.Router();
 router.post("/register", register);
 
 // /api/auth/registerbyadmin
-router.post("/registerbyadmin", registerByAdmin);
+router.post("/registerbyadmin", verifyTokenAndAuthorization(['admin']), registerByAdmin);
 
 // /api/auth/generateuserid
-router.get("/generateuserid", generateUserId);
+router.get("/generateuserid", verifyTokenAndAuthorization(['admin']), generateUserId);
 
 // /api/auth/login
 router.post("/login", login);

@@ -19,6 +19,7 @@ const shared = (req, res) => {
     res.status(201).json("shared route entered successfuly")
 }
 
+// api/test/...
 router.get("/admin", verifyTokenAndAuthorization(['admin']), admin);
 router.get("/instructor", verifyTokenAndAuthorization(['instructor']), instructor);
 router.get("/editor", verifyTokenAndAuthorization(['editor']), editor);

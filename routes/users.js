@@ -1,6 +1,6 @@
 const express = require("express");
 const { uploadImageMiddleware } = require("../middlewares/upload")
-
+const verifyTokenAndAuthorization = require("../middlewares/verifyToken")
 const {
   getAllUsers,
   getUserById,
@@ -14,7 +14,7 @@ router.get("/", getAllUsers);
 
 // /api/users/:id
 router.get("/:id", getUserById);
-router.put("/:id", uploadImageMiddleware, updateUser);
-router.delete("/:id", deleteUser);
+router.put("/:id", verifyTokenAndAuthorization(['admin']), uploadImageMiddleware, updateUser);
+router.delete("/:id", verifyTokenAndAuthorization(['admin']), deleteUser);
 
 module.exports = router;

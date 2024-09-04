@@ -27,10 +27,3 @@ function verifyTokenAndAuthorization(roles) {
 
 module.exports = verifyTokenAndAuthorization
 
-// module.exports = {
-//   verifyToken,
-//   verifyTokenAndAdmin: verifyTokenAndAuthorization("admin"),
-//   verifyTokenAndInstructor: verifyTokenAndAuthorization("instructor"),
-//   verifyTokenAndEditor: verifyTokenAndAuthorization("editor"),
-//   verifyTokenAndStudent: verifyTokenAndAuthorization("student"),
-// };
