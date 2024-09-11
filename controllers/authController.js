@@ -49,6 +49,7 @@ module.exports.register = asyncHandler(async (req, res) => {
     data: { ...other, token },
   });
 });
+
 /**
  *  @desc    Register New User by admin
  *  @route   /api/auth/registerbyadmin
@@ -118,6 +119,7 @@ module.exports.generateUserId = asyncHandler(async (req, res) => {
  *  @method  POST
  *  @access  public
  */
+
 module.exports.login = asyncHandler(async (req, res) => {
 
   const { error } = validateLoginUser(req.body);

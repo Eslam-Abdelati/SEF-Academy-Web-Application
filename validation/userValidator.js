@@ -34,6 +34,8 @@ const messages = {
   },
   phoneNumber: {
     "string.pattern.base": "Phone number must include a valid country code followed by 10 digits.",
+    "any.required": "Phone number is required.",
+
   }
 }
 
@@ -132,7 +134,7 @@ function validateUpdateUser(obj) {
         }
         return value;
       })
-      .required(),
+      .optional(),
 
     nationality: Joi.string().trim().min(3).max(50).optional(),
     country: Joi.string().trim().min(3).max(50).optional(),
@@ -152,10 +154,19 @@ function validateUpdateUser(obj) {
   return schema.validate(obj);
 }
 
+function validateChangePassword(obj) {
+  const schema = Joi.object({
+    password: passwordComplexity().required(),
+  });
+  return schema.validate(obj);
+}
+
 
 module.exports = {
+  messages,
   validateRegisterUser,
   validateRegisterUserByAdmin,
   validateLoginUser,
   validateUpdateUser,
+  validateChangePassword
 };

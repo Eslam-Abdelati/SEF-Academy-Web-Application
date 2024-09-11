@@ -3,6 +3,7 @@ const { uploadImageMiddleware } = require("../middlewares/upload")
 const verifyTokenAndAuthorization = require("../middlewares/verifyToken")
 const {
   getAllUsers,
+  getUsersByRole,
   getUserById,
   updateUser,
   deleteUser,
@@ -10,7 +11,8 @@ const {
 const router = express.Router();
 
 // /api/users
-router.get("/", getAllUsers);
+router.get("/", verifyTokenAndAuthorization(['admin']), getAllUsers);
+router.get("/role/:role", verifyTokenAndAuthorization(['admin']), getUsersByRole);
 
 // /api/users/:id
 router.get("/:id", getUserById);

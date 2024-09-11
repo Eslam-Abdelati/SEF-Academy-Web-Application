@@ -25,7 +25,7 @@ app.use(
 );
 
 // Static Folder
-app.use(express.static(path.join(__dirname, "images")));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -33,15 +33,22 @@ app.use(logger);
 
 app.use(helmet());
 
+app.set('view engine', 'ejs');
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
 
+app.use("/password", require("./routes/password"));
+app.use("/api/messengers", require("./routes/messengers"));
+app.use("/api/newsletter", require("./routes/newsletter"));
 
-app.use("/api/test", require("./routes/test"));
+// app.use('/api/user-actions', require("./routes/userActions"));
 
-// const { User } = require("./models/User")
-// console.log(User.schema.obj.role.enum);
-// console.log(User.schema.methods.generateToken());
+// 1
+app.use('/api/articles', require("./routes/articleRoute"));
+
+// 2
+app.use("/api/courses", require("./routes/courseRoute"));
 
 
 app.use(notFound);
@@ -50,3 +57,4 @@ app.use(errorHanlder);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+

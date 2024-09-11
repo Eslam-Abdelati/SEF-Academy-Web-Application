@@ -1,7 +1,10 @@
+const asyncHandler = require("express-async-handler");
 const { User } = require("../models/User");
 const path = require("path")
 const fs = require("fs")
 const { validateUpdateUser } = require("../validation/userValidator");
+const { convertToFullPath } = require("../utils/relativeToFullPath")
+const { deleteUploadedFile } = require("../utils/deleteFile")
 
 /**
  *  @desc    get all Users
@@ -12,13 +15,23 @@ const { validateUpdateUser } = require("../validation/userValidator");
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
+
     if (!users || users.length === 0) {
-      return res.status(404).json({ message: "there are no users" });
+      return res.status(404).json({ message: "There are no users" });
     }
+
+    const usersWithFullPaths = users.map(user => {
+      if (user.profileImage) {
+        user.profileImage = convertToFullPath(req, user.profileImage);
+      }
+      return user;
+    });
+
     return res.status(200).json({
       success: true,
-      data: users,
+      data: usersWithFullPaths,
     });
+
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({
@@ -26,6 +39,58 @@ exports.getAllUsers = async (req, res) => {
       message: error.message,
     });
   }
+
+};
+
+/**
+ *  @desc    get Users by role
+ *  @route   /api/users/role/:role
+ *  @method  GET
+ *  @access  private only admin
+ */
+exports.getUsersByRole = async (req, res) => {
+
+  const role = req.params.role.toLowerCase();
+
+  const roles = User.schema.paths.role.enumValues;
+
+  if (!roles.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid role parameter"
+    });
+  }
+
+  try {
+    const users = await User.find({ role: role }).select("-password");
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No users found for the given role"
+      });
+    }
+
+    const usersWithFullPaths = users.map(user => {
+      if (user.profileImage) {
+        user.profileImage = convertToFullPath(req, user.profileImage);
+      }
+      return user;
+    });
+
+    res.status(200).json({
+      success: true,
+      users: usersWithFullPaths
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
 };
 
 /**
@@ -34,28 +99,23 @@ exports.getAllUsers = async (req, res) => {
  *  @method  GET
  *  @access  public 
  */
-exports.getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("-password");
+exports.getUserById = asyncHandler(async (req, res) => {
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "there are no user with this id" });
-    } else {
-      return res.status(200).json({
-        success: true,
-        data: user,
-      });
-    }
-  } catch (error) {
-    console.error(error.message);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  const user = await User.findById(req.params.id).select("-password");
+
+  if (!user) {
+    return res.status(404).json({ message: "There is no user with this ID" });
   }
-};
+
+  if (user.profileImage) {
+    user.profileImage = convertToFullPath(req, user.profileImage);
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: user,
+  });
+})
 
 /**
  *  @desc    update User
@@ -63,64 +123,71 @@ exports.getUserById = async (req, res) => {
  *  @method  PUT
  *  @access  private only admin and user him self
  */
-exports.updateUser = async (req, res) => {
-  try {
+exports.updateUser = asyncHandler(async (req, res) => {
 
-    const { error } = validateUpdateUser(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.details[0].message,
-      });
-    }
-
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    if (req.body.email && req.body.email !== user.email) {
-      const existingUser = await User.findOne({ email: req.body.email });
-      if (existingUser) {
-        return res.status(400).json({ message: "This email is already in use" });
-      }
-    }
-
+  const { error } = validateUpdateUser(req.body);
+  if (error) {
     if (req.file) {
-      if (user.profileImage && !user.profileImage.includes("defultprofileimage.png")) {
+      deleteUploadedFile(req.file.filename);
+    }
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message,
+    });
+  }
 
-        const oldImagePath = path.join(`${__dirname}`, `../images/user`, path.basename(user.profileImage));
-        fs.unlink(oldImagePath, (err) => {
-          if (err) console.log("Failed to delete old image:", err.message);
-        });
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    if (req.file) {
+      deleteUploadedFile(req.file.filename);
+    }
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  if (req.body.email && req.body.email !== user.email) {
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      if (req.file) {
+        deleteUploadedFile(`/public/images/user/${req.file.filename}`);
       }
 
-      req.body.profileImage = path.join(`${__dirname}`, `../images/user/${req.file.filename}`);
+      return res.status(400).json({ message: "This email is already in use" });
     }
-
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    }).select("-password");
-
-    if (!updatedUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      updatedUser,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error: " + error.message });
   }
-};
+
+  if (req.file) {
+    if (user.profileImage && !user.profileImage.includes("defultprofileimage.png")) {
+      const oldImagePath = `/public/images/user/${path.basename(user.profileImage)}`;
+      deleteUploadedFile(oldImagePath);
+    }
+
+    req.body.profileImage = `/images/user/${req.file.filename}`;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  }).select("-password");
+
+  if (!updatedUser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+
+  updatedUser.profileImage = convertToFullPath(req, updatedUser.profileImage)
+
+  return res.status(200).json({
+    success: true,
+    updatedUser,
+  });
+
+});
 
 /**
  *  @desc    delete User

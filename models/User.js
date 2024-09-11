@@ -31,13 +31,19 @@ const userSchema = new mongoose.Schema(
     },
 
     profileImage: {
-      type: String,
-      default: path.join(`${__dirname}`, `../images/user/defultprofileimage.png`),
+      type: String,  
     },
-
   },
   { versionKey: false }
 );
+
+userSchema.pre("save", function (next) {
+  if (!this.profileImage) {
+    const defaultImagePath = path.join("images/user", "defultprofileimage.png");
+    this.profileImage = defaultImagePath;
+  }
+  next();
+});
 
 userSchema.methods.generateToken = function () {
   return jwt.sign(
@@ -46,11 +52,10 @@ userSchema.methods.generateToken = function () {
   );
 };
 
-const User = mongoose.model("User", userSchema);
-
 async function hashPassword(password) {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 }
 
+const User = mongoose.model("User", userSchema);
 module.exports = { User, hashPassword };
