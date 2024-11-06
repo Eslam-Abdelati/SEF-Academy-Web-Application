@@ -25,8 +25,8 @@ function validateCreateCourse(courseModel) {
     materials: Joi.string(),
     publishDate: Joi.string(),
     coverPhoto: Joi.string(),
-    units:Joi.string(),
-    review:Joi.string(),
+    units: Joi.string(),
+    review: Joi.string(),
   });
   return schema.validate(courseModel);
 }
@@ -55,10 +55,25 @@ function validateUpdateCourse(courseModel) {
   return schema.validate(courseModel);
 }
 
+const validateAnswers = (data) => {
+  const schema = Joi.object({
+    examId: Joi.string().required(),
+    answers: Joi.array()
+      .items(
+        Joi.object({
+          questionId: Joi.string().required(),
+          selectedAnswer: Joi.string().required(),
+        })
+      )
+      .required(),
+  });
+  return schema.validate(data);
+};
 
 
 
 module.exports = {
   validateCreateCourse,
   validateUpdateCourse,
+  validateAnswers
 };

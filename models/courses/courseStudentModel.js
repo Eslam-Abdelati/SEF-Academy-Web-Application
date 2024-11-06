@@ -12,12 +12,12 @@ const courseStudentSchema = new mongoose.Schema(
     course_Id: {
       type: mongoose.Schema.ObjectId,
       required: [true, "course_Id is required"],
-      ref: "courses",
+      ref: "Course",
     },
     progress: {
       type: String,
       trim: true,
-    },
+    }
   },
   { timestamps: true }
 );

@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const path = require('path');
 const courseSchema = new mongoose.Schema(
   {
+    status: {
+      type: String,
+      enum: ["enroll", "completed"],
+      default: "student",
+    },
     title: {
       type: String,
       required: [true, "course name required"],
@@ -89,10 +94,11 @@ const courseSchema = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Review",
     },
+
   },
   { timestamps: true }
-); 
+);
 
-const courseModel = mongoose.model('courses', courseSchema);
+const courseModel = mongoose.model('Course', courseSchema);
 
 module.exports = courseModel;

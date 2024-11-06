@@ -35,6 +35,7 @@ exports.saveCourse = asyncHandler(async (req, res) => {
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
+  req.body.status = "enroll"
   req.body.slug = slugify(req.body.title);
   const course = await courseModel.create(req.body);
   res
@@ -42,14 +43,14 @@ exports.saveCourse = asyncHandler(async (req, res) => {
     .json({ data: course })
     .redirect("/api/courses/index");
 });
-    
+
 
 //@dec get list of courses
 //@route GET /api/courses
 //@access public
 exports.getCourses = asyncHandler(async (req, res) => {
   const courses = await courseModel.find({});
-    res.status(200).json({  data: courses })
+  res.status(200).json({ data: courses })
 });
 
 
@@ -60,14 +61,14 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const course = await courseModel.findById(id)
     .populate({
-    path: "units", 
-    populate: {
-      path: "lessons",
-      model: "Lesson", 
-    },
-  }).populate({
-    path:"review"
-  });
+      path: "units",
+      populate: {
+        path: "lessons",
+        model: "Lesson",
+      },
+    }).populate({
+      path: "review"
+    });
   if (!course) {
     return next(new ApiError(`No course found for this id ${id}`, 404));
   }
@@ -75,9 +76,9 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 });
 
 
- // @desc    Get course count
- // @route   GET /api/courses/count
- // @access  private
+// @desc    Get course count
+// @route   GET /api/courses/count
+// @access  private
 exports.getCourseCount = asyncHandler(async (req, res) => {
   const course = await courseModel.countDocuments();
   res.status(200).json(course);

@@ -17,18 +17,16 @@ const certificateSchema = new mongoose.Schema(
     uploadDate: {
       type: String,
       trim: true,
+      default: () => new Date().toISOString() 
     },
     certificateImage: {
       type: String,
-      default: path.join(
-        `${__dirname}`,
-        `../images/course/d9e0d1deaff41b83a68244e2580669cb.jpg`
-      ),
+      default: "http://localhost:3000/images/certificates/certificate.png"
     },
-    
+
   },
 
   { timestamps: true }
 );
-const certificateModel = mongoose.model('Certificatecourse', certificateSchema);
+const certificateModel = mongoose.model('Certificate', certificateSchema);
 module.exports = certificateModel;

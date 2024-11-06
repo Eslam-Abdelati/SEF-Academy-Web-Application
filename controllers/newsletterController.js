@@ -70,20 +70,17 @@ module.exports.exportAllSubscribersAsExcles = asyncHandler(async (req, res) => {
 
     subscribers.forEach(subscriber => {
         worksheet.addRow({
-            id: subscriber._id.toString(), // Convert ObjectId to string
+            id: subscriber._id.toString(),
             email: subscriber.email,
-            subscribedAt: subscriber.subscribedAt.toISOString() // Convert date to string
+            subscribedAt: subscriber.subscribedAt.toISOString() 
         });
     });
 
-    // Set the response headers
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=subscribers.xlsx');
 
-    // Write the workbook to the response
     await workbook.xlsx.write(res);
 
-    // End the response
     res.end();
 })
 

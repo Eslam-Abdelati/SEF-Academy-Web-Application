@@ -5,15 +5,14 @@ const validator = require('validator')
 
 const examSchema = new mongoose.Schema(
   {
-    level: {
-      type: String,
-      required: [true, "exam level is required"],
-    },
-
-    course_Id: {
+    course_id: {
       type: mongoose.Schema.ObjectId,
       required: [true, "course_Id is required"],
       ref: "courses"
+    },
+    level: {
+      type: String,
+      required: [true, "exam level is required"],
     },
     full_mark: {
       type: Number,
@@ -26,8 +25,8 @@ const examSchema = new mongoose.Schema(
     },
     duration: {
       type: Number,
-    },
-    
+    }
+
   },
   { timestamps: true }
 );

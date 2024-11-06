@@ -8,7 +8,7 @@ const ApiError = require('../../validation/apiError');
 //@route POST /api/certificates
 //@access private
 exports.createCertificate = asyncHandler(async (req, res) => {
-  const { student_Id} = req.query;
+  const { student_Id } = req.query;
   if (!student_Id) {
     return res.status(400).json({
       error: "Please provide student_Id",
@@ -24,10 +24,11 @@ exports.createCertificate = asyncHandler(async (req, res) => {
 //@route POST /api/certificates
 //@access private
 exports.saveCertificate = asyncHandler(async (req, res) => {
-  const certificate = await certificateModel.create(req.body);
-  res.status(201).json({ data: certificate }).redirect('/api/courses/index');
+  const certificate = new certificateModel(req.body);
+  await certificate.save()
+  res.status(201).json({ data: certificate });
 });
-    
+
 
 //@dec update certificate
 //@route PUT /api/certificates

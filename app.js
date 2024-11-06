@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
-
+const dotenv = require('dotenv')
+dotenv.config({path:'config.env'})
 const path = require("path");
 
 const cors = require("cors");
@@ -35,6 +36,7 @@ app.use(helmet());
 
 app.set('view engine', 'ejs');
 
+// Routes user
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
 
@@ -42,13 +44,20 @@ app.use("/password", require("./routes/password"));
 app.use("/api/messengers", require("./routes/messengers"));
 app.use("/api/newsletter", require("./routes/newsletter"));
 
-// app.use('/api/user-actions', require("./routes/userActions"));
+app.use('/api/user-actions', require("./routes/userActions"));
 
-// 1
+// Routes articles
 app.use('/api/articles', require("./routes/articleRoute"));
 
-// 2
+// Routes courses
 app.use("/api/courses", require("./routes/courseRoute"));
+
+// Routes cvs
+app.use("/api/cv", require("./routes/cvsRoute"));
+
+ // Routes jops
+ app.use('/api/jobs', require("./routes/jobsRoute"));
+
 
 
 app.use(notFound);
