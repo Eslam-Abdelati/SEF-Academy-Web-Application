@@ -36,7 +36,7 @@ This project is a web application developed for *SEF Academy*, designed to provi
     
 
 3. Configure environment variables:
-    - Create a .env file in the root directory and set the following environment variables:
+    - Create config.env file in the root directory and set the following environment variables:
     bash
     PORT=5000
     MONGO_URI=mongodb://localhost:27017/sef-academy
